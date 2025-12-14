@@ -15,6 +15,7 @@ import {
     Pencil,
     Server,
     Loader2,
+    RefreshCcw,
 } from "lucide-react";
 import {
     useCustomProviders,
@@ -24,9 +25,14 @@ import {
     useAddCustomProviderModel,
     useDeleteCustomProviderModel,
     useCustomProviderModels,
+    useRefreshCustomProviderModels,
+    useToggleCustomProviderModel,
 } from "@core/chorus/api/CustomProvidersAPI";
 import { ICustomProvider } from "@core/chorus/types/CustomProvider";
 import { Model } from "@core/chorus/Models";
+import { Switch } from "./ui/switch";
+import { toast } from "sonner";
+import { SettingsManager } from "@core/utilities/Settings";
 
 interface ProviderFormProps {
     provider?: ICustomProvider;
@@ -228,10 +234,13 @@ interface ProviderCardProps {
 function ProviderCard({ provider, onEdit, onDelete }: ProviderCardProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [showModelForm, setShowModelForm] = useState(false);
+    const [isRefreshing, setIsRefreshing] = useState(false);
     const { data: models = [], isLoading: modelsLoading } =
         useCustomProviderModels(provider.id);
     const addModel = useAddCustomProviderModel();
     const deleteModel = useDeleteCustomProviderModel();
+    const refreshModels = useRefreshCustomProviderModels();
+    const toggleModel = useToggleCustomProviderModel();
 
     const handleAddModel = (data: {
         modelName: string;
@@ -253,6 +262,37 @@ function ProviderCard({ provider, onEdit, onDelete }: ProviderCardProps) {
 
     const handleDeleteModel = (modelId: string) => {
         deleteModel.mutate(modelId);
+    };
+
+    const handleRefreshModels = async () => {
+        const settings = await SettingsManager.getInstance().get();
+        const apiKey = settings.customProviderApiKeys?.[provider.id];
+        if (!apiKey) {
+            toast.error("API key not configured for this provider");
+            return;
+        }
+
+        setIsRefreshing(true);
+        try {
+            const result = await refreshModels.mutateAsync({
+                providerId: provider.id,
+                baseUrl: provider.baseUrl,
+                apiKey,
+            });
+            if (result.success) {
+                toast.success(`Found ${result.modelCount} models`);
+            } else {
+                toast.error(`Failed to fetch models: ${result.error}`);
+            }
+        } catch (error) {
+            toast.error("Failed to refresh models");
+        } finally {
+            setTimeout(() => setIsRefreshing(false), 600);
+        }
+    };
+
+    const handleToggleModel = (modelId: string, isEnabled: boolean) => {
+        toggleModel.mutate({ modelId, isEnabled });
     };
 
     return (
@@ -298,14 +338,27 @@ function ProviderCard({ provider, onEdit, onDelete }: ProviderCardProps) {
                 <CollapsibleContent className="mt-4 space-y-4">
                     <div className="flex items-center justify-between">
                         <h4 className="text-sm font-medium">Models</h4>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setShowModelForm(true)}
-                        >
-                            <Plus className="w-4 h-4 mr-2" />
-                            Add Model
-                        </Button>
+                        <div className="flex items-center gap-2">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => void handleRefreshModels()}
+                                disabled={isRefreshing}
+                            >
+                                <RefreshCcw
+                                    className={`w-4 h-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`}
+                                />
+                                Refresh
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setShowModelForm(true)}
+                            >
+                                <Plus className="w-4 h-4 mr-2" />
+                                Add
+                            </Button>
+                        </div>
                     </div>
 
                     {modelsLoading ? (
@@ -314,8 +367,8 @@ function ProviderCard({ provider, onEdit, onDelete }: ProviderCardProps) {
                         </div>
                     ) : models.length === 0 ? (
                         <p className="text-sm text-muted-foreground py-4 text-center">
-                            No models added yet. Add a model to start using this
-                            provider.
+                            No models yet. Click Refresh to discover models from
+                            /v1/models, or Add to manually add one.
                         </p>
                     ) : (
                         <div className="space-y-2">
@@ -324,9 +377,22 @@ function ProviderCard({ provider, onEdit, onDelete }: ProviderCardProps) {
                                     key={model.id}
                                     className="flex items-center justify-between p-2 rounded-md bg-muted/50"
                                 >
-                                    <span className="text-sm">
-                                        {model.displayName}
-                                    </span>
+                                    <div className="flex items-center gap-3">
+                                        <Switch
+                                            checked={model.isEnabled}
+                                            onCheckedChange={(checked) =>
+                                                handleToggleModel(
+                                                    model.id,
+                                                    checked,
+                                                )
+                                            }
+                                        />
+                                        <span
+                                            className={`text-sm ${!model.isEnabled ? "text-muted-foreground" : ""}`}
+                                        >
+                                            {model.displayName}
+                                        </span>
+                                    </div>
                                     <Button
                                         variant="ghost"
                                         size="icon"
