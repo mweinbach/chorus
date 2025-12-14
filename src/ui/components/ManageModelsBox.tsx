@@ -465,10 +465,15 @@ export function ManageModelsBox({
             (m) => getProviderName(m.modelId) === "openrouter",
         );
 
+        const customProviderModels = systemModels.filter(
+            (m) => getProviderName(m.modelId) === "custom",
+        );
+
         return {
             custom: filterBySearch(userModels, searchTerms),
             local: filterBySearch(localModels, searchTerms),
             openrouter: filterBySearch(openrouterModels, searchTerms),
+            customProviders: filterBySearch(customProviderModels, searchTerms),
         };
     }, [modelConfigs.data, searchQuery]);
 
@@ -712,6 +717,19 @@ export function ManageModelsBox({
                             onToggleModelConfig={handleToggleModelConfig}
                             onAddApiKey={handleAddApiKey}
                             groupId="custom"
+                        />
+                    )}
+
+                    {/* Custom Provider Models */}
+                    {modelGroups.customProviders.length > 0 && (
+                        <ModelGroup
+                            heading="Custom Providers"
+                            models={modelGroups.customProviders}
+                            checkedModelConfigIds={checkedModelConfigIds}
+                            mode={mode}
+                            onToggleModelConfig={handleToggleModelConfig}
+                            onAddApiKey={handleAddApiKey}
+                            groupId="customProviders"
                         />
                     )}
 
