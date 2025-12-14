@@ -17,6 +17,7 @@ import { ollamaClient } from "./OllamaClient";
 import { ProviderOllama } from "./ModelProviders/ProviderOllama";
 import { ProviderLMStudio } from "./ModelProviders/ProviderLMStudio";
 import { ProviderGrok } from "./ModelProviders/ProviderGrok";
+import { ProviderCustom } from "./ModelProviders/ProviderCustom";
 import posthog from "posthog-js";
 import { UserTool, UserToolCall, UserToolResult } from "./Toolsets";
 import { Attachment } from "./api/AttachmentsAPI";
@@ -230,7 +231,8 @@ export type ProviderName =
     | "ollama"
     | "lmstudio"
     | "grok"
-    | "meta";
+    | "meta"
+    | "custom";
 
 /**
  * Returns a human readable label for the provider
@@ -252,6 +254,7 @@ export function getProviderLabel(modelId: string): string {
  * Returns the provider name from a model id
  * Ex: "openrouter::meta-llama/llama-4-scout" -> "openrouter"
  * Ex: "openai/gpt-4o" -> "openai"
+ * Ex: "custom-abc123::my-model" -> "custom"
  */
 export function getProviderName(modelId: string): ProviderName {
     if (!modelId) {
@@ -262,6 +265,10 @@ export function getProviderName(modelId: string): ProviderName {
         console.error(
             `Invalid modelId - ${modelId} does not have a valid provider name`,
         );
+    }
+    // Custom providers have format "custom-{providerId}::modelName"
+    if (providerName?.startsWith("custom-")) {
+        return "custom";
     }
     return providerName as ProviderName;
 }
@@ -284,6 +291,8 @@ function getProvider(providerName: string): IProvider {
             return new ProviderLMStudio();
         case "grok":
             return new ProviderGrok();
+        case "custom":
+            return new ProviderCustom();
         default:
             throw new Error(`Unknown provider: ${providerName}`);
     }
@@ -591,6 +600,7 @@ const CONTEXT_LIMIT_PATTERNS: Record<ProviderName, string> = {
     lmstudio: "context window", // best guess
     perplexity: "context window", // best guess
     ollama: "context window", // best guess
+    custom: "context", // generic pattern for custom providers
 };
 
 /**
