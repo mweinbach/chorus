@@ -227,3 +227,49 @@ export function useCustomProviderModels(providerId: string) {
         queryFn: () => fetchCustomProviderModels(providerId),
     });
 }
+
+// Refresh models from provider's /v1/models endpoint
+export function useRefreshCustomProviderModels() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (params: {
+            providerId: string;
+            baseUrl: string;
+            apiKey: string;
+        }) => {
+            return await Models.downloadCustomProviderModels(
+                db,
+                params.providerId,
+                params.baseUrl,
+                params.apiKey,
+            );
+        },
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: ["modelConfigs"] });
+            await queryClient.invalidateQueries({ queryKey: ["models"] });
+            await queryClient.invalidateQueries({
+                queryKey: customProviderKeys.all(),
+            });
+        },
+    });
+}
+
+// Toggle model enabled/disabled state
+export function useToggleCustomProviderModel() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (params: { modelId: string; isEnabled: boolean }) => {
+            await db.execute("UPDATE models SET is_enabled = ? WHERE id = ?", [
+                params.isEnabled ? 1 : 0,
+                params.modelId,
+            ]);
+        },
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: ["modelConfigs"] });
+            await queryClient.invalidateQueries({ queryKey: ["models"] });
+            await queryClient.invalidateQueries({
+                queryKey: customProviderKeys.all(),
+            });
+        },
+    });
+}
