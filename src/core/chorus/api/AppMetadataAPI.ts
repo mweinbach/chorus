@@ -236,6 +236,24 @@ export function useApiKeys() {
     });
 }
 
+export async function getCustomProviderApiKeys(): Promise<
+    Record<string, string>
+> {
+    const settingsManager = SettingsManager.getInstance();
+    const settings = await settingsManager.get();
+    return settings.customProviderApiKeys || {};
+}
+
+/**
+ * Hook to access custom provider API keys
+ */
+export function useCustomProviderApiKeys() {
+    return useQuery({
+        queryKey: ["customProviderApiKeys"],
+        queryFn: getCustomProviderApiKeys,
+    });
+}
+
 export function useZoomLevel() {
     const { data: appMetadata } = useAppMetadata();
     return parseFloat(appMetadata?.["zoom_level"] || "100");

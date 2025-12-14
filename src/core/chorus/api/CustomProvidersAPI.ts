@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { v4 as uuidv4 } from "uuid";
 import { db } from "../DB";
 import { ICustomProvider } from "../types/CustomProvider";
 import * as Models from "../Models";
@@ -50,7 +51,7 @@ export function useCreateCustomProvider() {
             baseUrl: string;
             apiKey: string;
         }) => {
-            const id = crypto.randomUUID();
+            const id = uuidv4();
             await db.execute(
                 "INSERT INTO custom_providers (id, display_name, base_url) VALUES (?, ?, ?)",
                 [id, provider.displayName, provider.baseUrl],
@@ -72,6 +73,9 @@ export function useCreateCustomProvider() {
         onSuccess: async () => {
             await queryClient.invalidateQueries({
                 queryKey: customProviderKeys.all(),
+            });
+            await queryClient.invalidateQueries({
+                queryKey: ["customProviderApiKeys"],
             });
         },
     });
@@ -107,6 +111,9 @@ export function useUpdateCustomProvider() {
             await queryClient.invalidateQueries({
                 queryKey: customProviderKeys.all(),
             });
+            await queryClient.invalidateQueries({
+                queryKey: ["customProviderApiKeys"],
+            });
         },
     });
 }
@@ -139,6 +146,9 @@ export function useDeleteCustomProvider() {
         onSuccess: async () => {
             await queryClient.invalidateQueries({
                 queryKey: customProviderKeys.all(),
+            });
+            await queryClient.invalidateQueries({
+                queryKey: ["customProviderApiKeys"],
             });
             await queryClient.invalidateQueries({ queryKey: ["modelConfigs"] });
             await queryClient.invalidateQueries({ queryKey: ["models"] });

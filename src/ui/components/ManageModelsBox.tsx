@@ -45,6 +45,7 @@ import { dialogActions, useDialogStore } from "@core/infra/DialogStore";
 import * as AppMetadataAPI from "@core/chorus/api/AppMetadataAPI";
 import { hasApiKey } from "@core/utilities/ProxyUtils";
 import * as ModelsAPI from "@core/chorus/api/ModelsAPI";
+import { getCustomProviderId } from "@core/chorus/ModelProviders/ProviderCustom";
 import * as MessageAPI from "@core/chorus/api/MessageAPI";
 
 // Helper function to filter models by search terms
@@ -144,6 +145,8 @@ function ModelGroup({
     groupId?: string;
 }) {
     const { data: apiKeys } = AppMetadataAPI.useApiKeys();
+    const { data: customProviderApiKeys } =
+        AppMetadataAPI.useCustomProviderApiKeys();
 
     // Determine if a model should be disabled (no API key for the provider)
     const isModelNotAllowed = useCallback(
@@ -153,6 +156,16 @@ function ModelGroup({
             // Local models (ollama, lmstudio) don't require API keys
             if (provider === "ollama" || provider === "lmstudio") {
                 return false;
+            }
+
+            // Custom providers have their own API key storage
+            if (provider === "custom") {
+                const providerId = getCustomProviderId(model.modelId);
+                if (providerId && customProviderApiKeys?.[providerId]) {
+                    return false;
+                }
+                // Custom provider without API key configured
+                return true;
             }
 
             // If user has API key for this provider, allow it
@@ -170,7 +183,7 @@ function ModelGroup({
             // No API key for this provider - model is not allowed
             return true;
         },
-        [apiKeys],
+        [apiKeys, customProviderApiKeys],
     );
 
     return (
