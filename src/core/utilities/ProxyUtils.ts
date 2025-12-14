@@ -60,6 +60,11 @@ export function canProceedWithProvider(
         return { canProceed: true };
     }
 
+    // Custom providers have their own API key validation at runtime
+    if (providerKey === "custom") {
+        return { canProceed: true };
+    }
+
     // For providers that need API keys, check if one is configured
     if (!apiKeyField) {
         return {
