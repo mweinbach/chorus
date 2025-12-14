@@ -22,6 +22,7 @@ export interface Settings {
     };
     lmStudioBaseUrl?: string;
     cautiousEnter?: boolean;
+    customProviderApiKeys?: Record<string, string>;
 }
 
 export class SettingsManager {
