@@ -2458,5 +2458,19 @@ You have full access to bash commands on the user''''s computer. If you write a 
                     ('selected_model_configs_compare', '["openrouter::anthropic/claude-opus-4.5"]');
             "#,
         },
+        Migration {
+            version: 132,
+            description: "create custom_providers table",
+            kind: MigrationKind::Up,
+            sql: r#"
+                CREATE TABLE custom_providers (
+                    id TEXT PRIMARY KEY,
+                    display_name TEXT NOT NULL,
+                    base_url TEXT NOT NULL,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                );
+            "#,
+        },
     ];
 }
