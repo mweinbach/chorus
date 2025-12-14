@@ -495,6 +495,77 @@ export async function downloadLMStudioModels(db: Database): Promise<void> {
     }
 }
 
+/**
+ * Downloads models from a custom provider's /v1/models endpoint.
+ */
+export async function downloadCustomProviderModels(
+    db: Database,
+    providerId: string,
+    baseUrl: string,
+    apiKey: string,
+): Promise<{ success: boolean; modelCount: number; error?: string }> {
+    try {
+        // Disable all existing models for this provider
+        await db.execute(
+            "UPDATE models SET is_enabled = 0 WHERE id LIKE ?",
+            [`custom-${providerId}::%`],
+        );
+
+        // Fetch from /v1/models with API key
+        const modelsUrl = baseUrl.endsWith("/")
+            ? `${baseUrl}models`
+            : `${baseUrl}/models`;
+
+        const response = await fetch(modelsUrl, {
+            headers: {
+                Authorization: `Bearer ${apiKey}`,
+            },
+        });
+
+        if (!response.ok) {
+            return {
+                success: false,
+                modelCount: 0,
+                error: `HTTP ${response.status}: ${response.statusText}`,
+            };
+        }
+
+        const { data: models } = (await response.json()) as {
+            data: { id: string; name?: string }[];
+        };
+
+        if (!models || !Array.isArray(models)) {
+            return {
+                success: false,
+                modelCount: 0,
+                error: "Invalid response format: expected { data: [] }",
+            };
+        }
+
+        // Save each discovered model
+        for (const model of models) {
+            const displayName = model.name || model.id;
+            await saveModelAndDefaultConfig(
+                db,
+                {
+                    id: `custom-${providerId}::${model.id}`,
+                    displayName: displayName,
+                    supportedAttachmentTypes: ["text", "image", "webpage"],
+                    isEnabled: true,
+                    isInternal: false,
+                },
+                displayName,
+            );
+        }
+
+        return { success: true, modelCount: models.length };
+    } catch (error) {
+        const errorMessage =
+            error instanceof Error ? error.message : "Unknown error";
+        return { success: false, modelCount: 0, error: errorMessage };
+    }
+}
+
 /// ------------------------------------------------------------------------------------------------
 /// Helpers
 /// ------------------------------------------------------------------------------------------------
