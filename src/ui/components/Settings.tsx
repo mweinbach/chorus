@@ -40,6 +40,7 @@ import {
     Import,
     BookOpen,
     Globe,
+    Server,
 } from "lucide-react";
 import { toast } from "sonner";
 import { config } from "@core/config";
@@ -86,6 +87,7 @@ import ImportChatDialog from "./ImportChatDialog";
 import { dialogActions } from "@core/infra/DialogStore";
 import * as AppMetadataAPI from "@core/chorus/api/AppMetadataAPI";
 import { PermissionsTab } from "./PermissionsTab";
+import { CustomProvidersTab } from "./CustomProvidersTab";
 import { cn } from "@ui/lib/utils";
 
 type ToolsetFormProps = {
@@ -1095,6 +1097,7 @@ export type SettingsTabId =
     | "import"
     | "system-prompt"
     | "api-keys"
+    | "custom-providers"
     | "quick-chat"
     | "connections"
     | "permissions"
@@ -1111,6 +1114,7 @@ const TABS: Record<SettingsTabId, TabConfig> = {
     import: { label: "Import", icon: Import },
     "system-prompt": { label: "System Prompt", icon: FileText },
     "api-keys": { label: "API Keys", icon: Key },
+    "custom-providers": { label: "Custom Providers", icon: Server },
     "quick-chat": { label: "Ambient Chat", icon: Fullscreen },
     connections: { label: "Connections", icon: PlugIcon },
     permissions: { label: "Tool Permissions", icon: ShieldCheckIcon },
@@ -1743,6 +1747,12 @@ export default function Settings({ tab = "general" }: SettingsProps) {
                                     </CollapsibleContent>
                                 </Collapsible>
                             </div>
+                        </div>
+                    )}
+
+                    {activeTab === "custom-providers" && (
+                        <div className="space-y-6 max-w-2xl">
+                            <CustomProvidersTab />
                         </div>
                     )}
 
