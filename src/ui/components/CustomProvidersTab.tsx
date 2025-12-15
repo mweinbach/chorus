@@ -354,7 +354,7 @@ function ProviderCard({ provider, onEdit, onDelete }: ProviderCardProps) {
                                 {provider.baseUrl}
                             </p>
                             <p className="text-xs text-muted-foreground">
-                                {API_FORMAT_LABELS[provider.apiFormat]}
+                                {API_FORMAT_LABELS[provider.apiFormat] ?? "OpenAI Chat Completions"}
                             </p>
                         </div>
                         <ChevronDown
