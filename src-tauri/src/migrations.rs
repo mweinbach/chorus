@@ -2472,5 +2472,13 @@ You have full access to bash commands on the user''''s computer. If you write a 
                 );
             "#,
         },
+        Migration {
+            version: 133,
+            description: "add api_format column to custom_providers",
+            kind: MigrationKind::Up,
+            sql: r#"
+                ALTER TABLE custom_providers ADD COLUMN api_format TEXT DEFAULT 'openai_chat_completions';
+            "#,
+        },
     ];
 }

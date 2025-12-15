@@ -9,6 +9,13 @@ import {
     CollapsibleTrigger,
 } from "./ui/collapsible";
 import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "./ui/select";
+import {
     ChevronDown,
     Plus,
     Trash2,
@@ -28,11 +35,21 @@ import {
     useRefreshCustomProviderModels,
     useToggleCustomProviderModel,
 } from "@core/chorus/api/CustomProvidersAPI";
-import { ICustomProvider } from "@core/chorus/types/CustomProvider";
+import {
+    ICustomProvider,
+    CustomProviderApiFormat,
+} from "@core/chorus/types/CustomProvider";
 import { Model } from "@core/chorus/Models";
 import { Switch } from "./ui/switch";
 import { toast } from "sonner";
 import { SettingsManager } from "@core/utilities/Settings";
+
+const API_FORMAT_LABELS: Record<CustomProviderApiFormat, string> = {
+    openai_chat_completions: "OpenAI Chat Completions",
+    openai_responses: "OpenAI Responses API",
+    google_interactions: "Google Interactions API",
+    anthropic_messages: "Anthropic Messages API",
+};
 
 interface ProviderFormProps {
     provider?: ICustomProvider;
@@ -40,6 +57,7 @@ interface ProviderFormProps {
         displayName: string;
         baseUrl: string;
         apiKey: string;
+        apiFormat: CustomProviderApiFormat;
     }) => void;
     onCancel: () => void;
     isLoading?: boolean;
@@ -54,6 +72,9 @@ function ProviderForm({
     const [displayName, setDisplayName] = useState(provider?.displayName ?? "");
     const [baseUrl, setBaseUrl] = useState(provider?.baseUrl ?? "");
     const [apiKey, setApiKey] = useState("");
+    const [apiFormat, setApiFormat] = useState<CustomProviderApiFormat>(
+        provider?.apiFormat ?? "openai_chat_completions"
+    );
     const [errors, setErrors] = useState<Record<string, string>>({});
 
     const validate = () => {
@@ -79,7 +100,7 @@ function ProviderForm({
 
     const handleSubmit = () => {
         if (validate()) {
-            onSubmit({ displayName, baseUrl, apiKey });
+            onSubmit({ displayName, baseUrl, apiKey, apiFormat });
         }
     };
 
@@ -131,6 +152,32 @@ function ProviderForm({
                 {errors.apiKey && (
                     <p className="text-sm text-destructive">{errors.apiKey}</p>
                 )}
+            </div>
+
+            <div className="space-y-2">
+                <Label htmlFor="apiFormat">API Format</Label>
+                <Select
+                    value={apiFormat}
+                    onValueChange={(value) =>
+                        setApiFormat(value as CustomProviderApiFormat)
+                    }
+                >
+                    <SelectTrigger>
+                        <SelectValue placeholder="Select API format" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {Object.entries(API_FORMAT_LABELS).map(
+                            ([value, label]) => (
+                                <SelectItem key={value} value={value}>
+                                    {label}
+                                </SelectItem>
+                            ),
+                        )}
+                    </SelectContent>
+                </Select>
+                <p className="text-sm text-muted-foreground">
+                    Choose the API format your provider uses
+                </p>
             </div>
 
             <div className="flex justify-end gap-2">
@@ -306,6 +353,9 @@ function ProviderCard({ provider, onEdit, onDelete }: ProviderCardProps) {
                             <p className="text-sm text-muted-foreground truncate max-w-xs">
                                 {provider.baseUrl}
                             </p>
+                            <p className="text-xs text-muted-foreground">
+                                {API_FORMAT_LABELS[provider.apiFormat]}
+                            </p>
                         </div>
                         <ChevronDown
                             className={`w-4 h-4 text-muted-foreground transition-transform ${isOpen ? "rotate-180" : ""}`}
@@ -433,6 +483,7 @@ export function CustomProvidersTab() {
         displayName: string;
         baseUrl: string;
         apiKey: string;
+        apiFormat: CustomProviderApiFormat;
     }) => {
         createProvider.mutate(data, {
             onSuccess: () => {
@@ -445,6 +496,7 @@ export function CustomProvidersTab() {
         displayName: string;
         baseUrl: string;
         apiKey: string;
+        apiFormat: CustomProviderApiFormat;
     }) => {
         if (!editingProvider) return;
         updateProvider.mutate(
@@ -453,6 +505,7 @@ export function CustomProvidersTab() {
                 displayName: data.displayName,
                 baseUrl: data.baseUrl,
                 apiKey: data.apiKey || undefined,
+                apiFormat: data.apiFormat,
             },
             {
                 onSuccess: () => {

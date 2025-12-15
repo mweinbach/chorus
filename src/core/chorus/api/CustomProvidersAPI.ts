@@ -1,7 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { v4 as uuidv4 } from "uuid";
 import { db } from "../DB";
-import { ICustomProvider } from "../types/CustomProvider";
+import {
+    ICustomProvider,
+    CustomProviderApiFormat,
+} from "../types/CustomProvider";
 import * as Models from "../Models";
 import { SettingsManager } from "@core/utilities/Settings";
 
@@ -9,6 +12,7 @@ interface CustomProviderDBRow {
     id: string;
     display_name: string;
     base_url: string;
+    api_format: string;
     created_at: string;
     updated_at: string;
 }
@@ -24,6 +28,8 @@ function readCustomProvider(row: CustomProviderDBRow): ICustomProvider {
         id: row.id,
         displayName: row.display_name,
         baseUrl: row.base_url,
+        apiFormat: (row.api_format ??
+            "openai_chat_completions") as CustomProviderApiFormat,
         createdAt: row.created_at,
         updatedAt: row.updated_at,
     };
@@ -50,11 +56,12 @@ export function useCreateCustomProvider() {
             displayName: string;
             baseUrl: string;
             apiKey: string;
+            apiFormat: CustomProviderApiFormat;
         }) => {
             const id = uuidv4();
             await db.execute(
-                "INSERT INTO custom_providers (id, display_name, base_url) VALUES (?, ?, ?)",
-                [id, provider.displayName, provider.baseUrl],
+                "INSERT INTO custom_providers (id, display_name, base_url, api_format) VALUES (?, ?, ?, ?)",
+                [id, provider.displayName, provider.baseUrl, provider.apiFormat],
             );
 
             // Store API key
@@ -89,10 +96,11 @@ export function useUpdateCustomProvider() {
             displayName: string;
             baseUrl: string;
             apiKey?: string;
+            apiFormat: CustomProviderApiFormat;
         }) => {
             await db.execute(
-                "UPDATE custom_providers SET display_name = ?, base_url = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
-                [params.displayName, params.baseUrl, params.id],
+                "UPDATE custom_providers SET display_name = ?, base_url = ?, api_format = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+                [params.displayName, params.baseUrl, params.apiFormat, params.id],
             );
 
             if (params.apiKey !== undefined) {
