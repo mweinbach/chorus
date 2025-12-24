@@ -46,6 +46,7 @@ import * as AppMetadataAPI from "@core/chorus/api/AppMetadataAPI";
 import { hasApiKey } from "@core/utilities/ProxyUtils";
 import * as ModelsAPI from "@core/chorus/api/ModelsAPI";
 import * as MessageAPI from "@core/chorus/api/MessageAPI";
+import { useSettings } from "./hooks/useSettings";
 
 // Helper function to filter models by search terms
 const filterBySearch = (models: ModelConfig[], searchTerms: string[]) => {
@@ -81,7 +82,7 @@ const formatPricing = (model: ModelConfig): string | null => {
         return price.toFixed(3);
     };
 
-    return `$${formatPrice(inputPricePerMillion)}/$${formatPrice(outputPricePerMillion)} per 1M tokens`;
+    return `$${formatPrice(inputPricePerMillion)} / $${formatPrice(outputPricePerMillion)} per 1M tokens`;
 };
 
 // Helper function to check if a model is still considered "new"
@@ -155,6 +156,7 @@ function ModelGroup({
     emptyState,
     onAddApiKey,
     groupId,
+    showCost,
 }: {
     heading: React.ReactNode;
     models: ModelConfig[];
@@ -165,6 +167,7 @@ function ModelGroup({
     emptyState?: React.ReactNode;
     onAddApiKey: () => void;
     groupId?: string;
+    showCost: boolean;
 }) {
     const { data: apiKeys } = AppMetadataAPI.useApiKeys();
 
@@ -238,7 +241,7 @@ function ModelGroup({
                                             </Badge>
                                         )}
                                     </div>
-                                    {formatPricing(m) && (
+                                    {showCost && formatPricing(m) && (
                                         <p className="mt-0.5 text-xs text-muted-foreground">
                                             {formatPricing(m)}
                                         </p>
@@ -337,6 +340,8 @@ export function ManageModelsBox({
     const modelConfigs = ModelsAPI.useModelConfigs();
     const showOpenRouter = AppMetadataAPI.useShowOpenRouter();
     const setShowOpenRouterMutation = AppMetadataAPI.useSetShowOpenRouter();
+    const settings = useSettings();
+    const showCost = settings?.showCost ?? false;
 
     const selectedSingleModelConfig = useMemo(() => {
         if (mode.type === "single") {
@@ -663,6 +668,7 @@ export function ManageModelsBox({
                             onToggleModelConfig={handleToggleModelConfig}
                             onAddApiKey={handleAddApiKey}
                             groupId="openrouter"
+                            showCost={showCost}
                             refreshButton={
                                 showOpenRouter && (
                                     <div className="flex items-center gap-1">
@@ -747,6 +753,7 @@ export function ManageModelsBox({
                             onToggleModelConfig={handleToggleModelConfig}
                             onAddApiKey={handleAddApiKey}
                             groupId="anthropic"
+                            showCost={showCost}
                         />
                     )}
                     {modelGroups.directByProvider.openai.length > 0 && (
@@ -758,6 +765,7 @@ export function ManageModelsBox({
                             onToggleModelConfig={handleToggleModelConfig}
                             onAddApiKey={handleAddApiKey}
                             groupId="openai"
+                            showCost={showCost}
                         />
                     )}
                     {modelGroups.directByProvider.google.length > 0 && (
@@ -769,6 +777,7 @@ export function ManageModelsBox({
                             onToggleModelConfig={handleToggleModelConfig}
                             onAddApiKey={handleAddApiKey}
                             groupId="google"
+                            showCost={showCost}
                         />
                     )}
                     {modelGroups.directByProvider.grok.length > 0 && (
@@ -780,6 +789,7 @@ export function ManageModelsBox({
                             onToggleModelConfig={handleToggleModelConfig}
                             onAddApiKey={handleAddApiKey}
                             groupId="grok"
+                            showCost={showCost}
                         />
                     )}
                     {modelGroups.directByProvider.perplexity.length > 0 && (
@@ -791,6 +801,7 @@ export function ManageModelsBox({
                             onToggleModelConfig={handleToggleModelConfig}
                             onAddApiKey={handleAddApiKey}
                             groupId="perplexity"
+                            showCost={showCost}
                         />
                     )}
 
@@ -819,6 +830,7 @@ export function ManageModelsBox({
                             onToggleModelConfig={handleToggleModelConfig}
                             onAddApiKey={handleAddApiKey}
                             groupId="custom"
+                            showCost={showCost}
                         />
                     )}
 
@@ -831,6 +843,7 @@ export function ManageModelsBox({
                         onToggleModelConfig={handleToggleModelConfig}
                         onAddApiKey={handleAddApiKey}
                         groupId="local"
+                        showCost={showCost}
                         refreshButton={
                             <button
                                 onClick={(e) => {
