@@ -4,7 +4,7 @@
 
 Sets up a new isolated development instance by:
 
--   Installing dependencies with `pnpm i`
+-   Installing dependencies with `bun install`
 -   Creating the Application Support directory for the instance
 -   Copying `auth.dat` from the main dev instance (if it exists)
 
@@ -14,18 +14,18 @@ Sets up a new isolated development instance by:
 # Using the script directly
 ./script/setup-instance.sh [instance-name]
 
-# Using pnpm (recommended)
-pnpm run setup [instance-name]
+# Using bun (recommended)
+bun run setup [instance-name]
 ```
 
 ### Example
 
 ```bash
 # Set up a new instance called "feature-auth"
-pnpm run setup feature-auth
+bun run setup feature-auth
 
 # Set up using the repo directory name as instance name
-pnpm run setup
+bun run setup
 ```
 
 ## dev-instance.sh
@@ -38,25 +38,25 @@ This script allows you to run multiple isolated instances of Chorus on the same 
 # Using the script directly
 ./script/dev-instance.sh [instance-name]
 
-# Using pnpm (recommended)
-pnpm run workspace [instance-name]
+# Using bun (recommended)
+bun run workspace [instance-name]
 ```
 
 ### Examples
 
 ```bash
 # Run a default instance (uses the repo directory name, e.g., "chorus")
-pnpm run workspace
+bun run workspace
 
 # Run an instance for a specific feature branch
-pnpm run workspace feature-auth
+bun run workspace feature-auth
 
 # Run an instance for testing
-pnpm run workspace test-instance
+bun run workspace test-instance
 
 # Run multiple instances simultaneously (using bash)
-pnpm run workspace instance1 &
-pnpm run workspace instance2 &
+bun run workspace instance1 &
+bun run workspace instance2 &
 ```
 
 ### Features

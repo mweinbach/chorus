@@ -123,6 +123,19 @@ pub fn run() {
     #[cfg(debug_assertions)] // only enable instrumentation in development builds
     let devtools = tauri_plugin_devtools::init();
 
+    let context = tauri::generate_context!();
+    #[cfg(debug_assertions)]
+    {
+        for version in [132, 133] {
+            if let Err(err) = migrations::reset_sqlx_checksum_for_version_in_app_config(
+                &context.config().identifier,
+                version,
+            ) {
+                eprintln!("warning: failed to reset migration {version} checksum: {err}");
+            }
+        }
+    }
+
     let migrations = migrations::migrations();
 
     let mut builder = tauri::Builder::default()
@@ -455,6 +468,6 @@ pub fn run() {
             command::write_file_async,
             command::get_file_metadata,
         ])
-        .run(tauri::generate_context!())
+        .run(context)
         .expect("error while running tauri application");
 }

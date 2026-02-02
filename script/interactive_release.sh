@@ -6,21 +6,21 @@ echo "🚀 Starting interactive release process..."
 
 # # Run lint and format checks
 # echo "🔍 Running lint checks..."
-# if ! pnpm lint; then
+# if ! bun run lint; then
 #     echo "❌ Lint errors found. Please fix them before releasing."
 #     exit 1
 # fi
 
 echo "🎨 Running format checks..."
-if ! pnpm format:check; then
-    echo "❌ Formatting issues found. Run 'pnpm format' to fix them."
+if ! bun run format:check; then
+    echo "❌ Formatting issues found. Run 'bun run format' to fix them."
     exit 1
 fi
 
 echo "✅ All lint and format checks passed!"
 
-echo "Running pnpm tsc..."
-pnpm exec tsc
+echo "Running bunx tsc..."
+bunx tsc
 
 # Step 0: Pull latest from origin/main
 echo "📥 Pulling latest changes from origin/main..."

@@ -5,7 +5,7 @@
 To release a new version of Chorus:
 
 ```bash
-pnpm run release
+bun run release
 ```
 
 That's it!

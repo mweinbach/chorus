@@ -17,19 +17,19 @@ fi
 # Run lint checks
 if [[ -n "$FIX_FLAG" ]]; then
     echo "Running lint with auto-fix..."
-    pnpm run lint:fix
+    bun run lint:fix
 else
     echo "Running lint checks..."
-    pnpm run lint
+    bun run lint
 fi
 
 # Run format checks
 if [[ -n "$FIX_FLAG" ]]; then
     echo "Running prettier with auto-fix..."
-    pnpm run format
+    bun run format
 else
     echo "Running format checks..."
-    pnpm run format:check
+    bun run format:check
 fi
 
 echo "Validation complete!"

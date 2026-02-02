@@ -1,6 +1,7 @@
 #![allow(unexpected_cfgs)]
 
 #[cfg(target_os = "macos")]
+#[allow(deprecated)]
 use tauri_nspanel::{
     cocoa::{
         appkit::NSWindowCollectionBehavior, base::id as cocoa_id, foundation::NSSize,
@@ -29,6 +30,7 @@ pub trait WebviewWindowExt {
 }
 
 #[cfg(target_os = "macos")]
+#[allow(deprecated)]
 impl<R: Runtime> WebviewWindowExt for WebviewWindow<R> {
     fn to_spotlight_panel(&self, is_dark_mode: bool) -> tauri::Result<Panel> {
         apply_vibrancy(

@@ -59,14 +59,8 @@ import { confirm } from "@tauri-apps/plugin-dialog";
 import { writeText } from "@tauri-apps/plugin-clipboard-manager";
 import { resourceDir, homeDir } from "@tauri-apps/api/path";
 import { v4 as uuidv4 } from "uuid";
-import {
-    MutationCache,
-    QueryClient,
-    QueryClientProvider,
-    useQuery,
-} from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { AppMetadataProvider } from "@ui/providers/AppMetadataProvider";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { useShortcut } from "./hooks/useShortcut";
 import { Button } from "./components/ui/button";
 import { DatabaseProvider } from "./providers/DatabaseProvider";
@@ -82,24 +76,6 @@ scan({
     enabled: true,
     log: true, // logs render info to console (default: false)
     clearLog: false, // clears the console per group of renders (default: false)
-});
-
-const mutationCache = new MutationCache({
-    onError: (error, variables, context) => {
-        console.error("Mutation error:", error, variables, context); // default error handler. makes sure we don't miss errors in mutations
-    },
-});
-
-const queryClient = new QueryClient({
-    mutationCache,
-    defaultOptions: {
-        queries: {
-            retry: false,
-            networkMode: "always",
-            refetchOnWindowFocus: false,
-            staleTime: Infinity,
-        },
-    },
 });
 
 // function DeeplinkTester({ onTest }: { onTest: (urls: string[]) => void }) {
@@ -1011,7 +987,7 @@ function App() {
     }, []);
 
     return (
-        <QueryClientProvider client={queryClient}>
+        <>
             <script src="https://unpkg.com/react-scan/dist/auto.global.js"></script>
             <Router>
                 <ThemeProvider storageKey="melty-theme">
@@ -1019,11 +995,9 @@ function App() {
                         {db ? (
                             <DatabaseProvider db={db}>
                                 <AppProvider>
-                                    <QueryClientProvider client={queryClient}>
-                                        <AppMetadataProvider>
-                                            <AppContent />
-                                        </AppMetadataProvider>
-                                    </QueryClientProvider>
+                                    <AppMetadataProvider>
+                                        <AppContent />
+                                    </AppMetadataProvider>
                                 </AppProvider>
                             </DatabaseProvider>
                         ) : (
@@ -1067,8 +1041,7 @@ function App() {
                     </ErrorBoundary>
                 </ThemeProvider>
             </Router>
-            <ReactQueryDevtools initialIsOpen={false} />
-        </QueryClientProvider>
+        </>
     );
 }
 

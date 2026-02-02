@@ -2,9 +2,9 @@
 
 ## Commands
 
--   **Dev:** `pnpm run vite:dev` (Vite), `npm run tauri:dev` (Tauri dev)
--   **Build:** `pnpm run build`
--   **QA/Prod:** `npm run tauri:qa`, `npm run tauri:prod`
+-   **Dev:** `bun run vite:dev` (Vite), `bun run tauri:dev` (Tauri dev)
+-   **Build:** `bun run build`
+-   **QA/Prod:** `bun run tauri:qa`, `bun run tauri:prod`
 
 ## Code Style
 

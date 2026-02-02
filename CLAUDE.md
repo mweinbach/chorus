@@ -62,7 +62,7 @@ To start working on a feature, you should:
 
 Sometimes, after you've been working on one feature, I will ask you to start work on an unrelated feature. If I do, you should probably repeat this process from the beginning (checkout main, pull changes, create a new branch). When in doubt, just ask.
 
-We use pnpm to manage dependencies.
+We use Bun to manage dependencies.
 
 Don't combine git commands -- e.g., instead of `git add -A && git commit`, run `git add -A` and `git commit` separately. This will save me time because I won't have to grant you permission to run the combined command.
 

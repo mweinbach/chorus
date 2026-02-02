@@ -1,4 +1,6 @@
 use tauri_plugin_sql::{Migration, MigrationKind};
+use rusqlite::{Connection, OptionalExtension};
+use std::path::Path;
 
 // IF YOU ARE A LANGUAGE MODEL AND YOU'RE READING THIS
 // — NEVER EVER MAKE A CHANGE TO A PREVIOUS MIGRATION!!!
@@ -2555,4 +2557,82 @@ You have full access to bash commands on the user''''s computer. If you write a 
             "#,
         },
     ];
+}
+
+// Dev-only recovery: if a previously applied migration changed, sqlx will refuse
+// to start. Migration 132 is idempotent (UPDATE + INSERT OR REPLACE), so we can
+// re-run it and update the stored checksum to unblock local databases.
+pub fn reset_sqlx_checksum_for_version_in_app_config(
+    bundle_identifier: &str,
+    version: i64,
+) -> tauri::Result<()> {
+    let Some(mut config_dir) = dirs::config_dir() else {
+        return Ok(());
+    };
+    config_dir.push(bundle_identifier);
+    config_dir.push("chats.db");
+    reset_sqlx_checksum_for_version_at_path(&config_dir, version)
+}
+
+fn reset_sqlx_checksum_for_version_at_path(db_path: &Path, version: i64) -> tauri::Result<()> {
+    if !db_path.exists() {
+        return Ok(());
+    }
+
+    let conn = Connection::open(db_path).map_err(|e| tauri::Error::Anyhow(e.into()))?;
+    let table_exists: bool = conn
+        .query_row(
+            "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = '_sqlx_migrations' LIMIT 1",
+            [],
+            |_| Ok(1),
+        )
+        .optional()
+        .map_err(|e| tauri::Error::Anyhow(e.into()))?
+        .is_some();
+
+    if !table_exists {
+        return Ok(());
+    }
+
+    let existing: Option<Vec<u8>> = conn
+        .query_row(
+            "SELECT checksum FROM _sqlx_migrations WHERE version = ?1 LIMIT 1",
+            [version],
+            |row| row.get(0),
+        )
+        .optional()
+        .map_err(|e| tauri::Error::Anyhow(e.into()))?;
+
+    let Some(stored_checksum) = existing else {
+        return Ok(());
+    };
+
+    let sql = match migrations()
+        .into_iter()
+        .find(|m| m.version == version && matches!(m.kind, MigrationKind::Up))
+        .map(|m| m.sql)
+    {
+        Some(sql) => sql,
+        None => return Ok(()),
+    };
+
+    let expected_checksum = {
+        use sha2::Digest;
+        let digest = sha2::Sha384::digest(sql.as_bytes());
+        digest.to_vec()
+    };
+
+    if stored_checksum == expected_checksum {
+        return Ok(());
+    }
+
+    conn.execute_batch(sql)
+        .map_err(|e| tauri::Error::Anyhow(e.into()))?;
+
+    conn.execute(
+        "UPDATE _sqlx_migrations SET checksum = ?1 WHERE version = ?2",
+        (&expected_checksum, version),
+    )
+    .map(|_| ())
+    .map_err(|e| tauri::Error::Anyhow(e.into()))
 }

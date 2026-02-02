@@ -74,7 +74,7 @@ If you encounter any issues during the release process, please contact the DevOp
 To build the application locally, run the following command:
 
 ```bash
-yarn run tauri build
+bun run tauri -- build
 ```
 
 Make sure you have the necessary environment variables set for your platform. Ask Charlie about this.

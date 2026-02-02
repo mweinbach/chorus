@@ -31,6 +31,15 @@ export default defineConfig(async () => ({
             "@core": path.resolve(__dirname, "./src/core"),
             "@": path.resolve(__dirname, "./src"),
         },
+        dedupe: [
+            "react",
+            "react-dom",
+            "@tanstack/react-query",
+            "@tanstack/query-core",
+        ],
+    },
+    optimizeDeps: {
+        exclude: ["use-react-query-auto-sync"],
     },
     build: {
         target: ["safari15"], // add chrome105 if we add windows support

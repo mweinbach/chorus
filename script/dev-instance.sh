@@ -72,7 +72,7 @@ export VITE_PORT="$PORT"
 export VITE_HMR_PORT="$HMR_PORT"
 
 # Run tauri dev with the base dev config and our override
-pnpm run tauri dev --config src-tauri/tauri.dev.conf.json --config "$CONFIG_OVERRIDE"
+bun run tauri -- dev --config src-tauri/tauri.dev.conf.json --config "$CONFIG_OVERRIDE"
 
 # Clean up the temporary file when done
 rm -f "$CONFIG_OVERRIDE"

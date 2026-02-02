@@ -18,15 +18,15 @@ You will need:
 2. Rust and Cargo installed and on your path (verify with `rustc --version`, `cargo --version`)
 3. `imagemagick` (optional)
 4. `git-lfs` (`brew install git-lfs`)
-5. `pnpm` (`brew install pnpm`)
+5. `bun` (`brew install bun`)
 
 Once you have those set up, please run:
 
 ```bash
 git lfs install --force
 git lfs pull
-pnpm run setup  # This is also our Conductor setup script
-pnpm run dev    # This is also our Conductor run script
+bun run setup  # This is also our Conductor setup script
+bun run dev    # This is also our Conductor run script
 ```
 
 # Nightly Build

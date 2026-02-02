@@ -24,7 +24,7 @@ echo "App identifier: $IDENTIFIER"
 
 # Install dependencies
 echo "Installing dependencies..."
-pnpm i
+bun install
 
 # Create the Application Support directory
 APP_SUPPORT_DIR="$HOME/Library/Application Support"
@@ -117,4 +117,4 @@ fi
 
 echo ""
 echo "✅ Setup complete! You can now run:"
-echo "    pnpm run dev"
+echo "    bun run dev"

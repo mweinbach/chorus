@@ -4,9 +4,9 @@
     "version": "0.14.5",
     "identifier": "sh.chorus.app",
     "build": {
-        "beforeDevCommand": "pnpm vite:dev",
+        "beforeDevCommand": "bun run vite:dev",
         "devUrl": "http://localhost:1420",
-        "beforeBuildCommand": "pnpm build",
+        "beforeBuildCommand": "bun run build",
         "frontendDist": "../dist"
     },
     "app": {
